@@ -8,6 +8,7 @@
 	import { MoveUpRight, MoveDownRight, MoveUpLeft, MoveDownLeft } from 'lucide-svelte'
 	import Slider from '$lib/components/ui/slider/slider.svelte'
 	import * as Tone from 'tone'
+	import { mode } from 'mode-watcher'
 
 	let outputs = $state<Output[]>([])
 
@@ -226,6 +227,8 @@
 	let rowDirection = $state(0)
 	const DirectionIcon = $derived(directionIcons[rowDirection])
 
+	let darkMode = $derived($mode === 'dark')
+
 	let stagger = $state(0.75)
 
 	const indexToNote = (index: number) => {
@@ -421,7 +424,7 @@
 					class="border-2x m-2 flex h-20 w-20 flex-col items-center justify-center rounded-xl border-2"
 					class:border-primary={pressed}
 					class:pt-2={pressed}
-					class:bg-muted={whiteKey}
+					class:bg-muted={whiteKey === darkMode}
 				>
 					<span class="text-xl font-semibold">{noteLabel}</span>
 					<span class="text-muted-foreground">{formatKeyLabel(key.label)}</span>
