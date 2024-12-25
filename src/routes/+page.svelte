@@ -235,13 +235,13 @@
 		return note
 	}
 
-	const noteLabel = (note: number) => {
+	const noteToLabel = (note: number) => {
 		if (note < 0 || note > 127) return ''
 		const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 		return notes[note % 12] + Math.floor(note / 12)
 	}
 
-	const formatLabel = (label: string) => {
+	const formatKeyLabel = (label: string) => {
 		switch (label) {
 			case 'ArrowUp':
 				return '↑'
@@ -300,7 +300,7 @@
 		const note = indexToNote(index)
 		selectedOutput?.playNote(note)
 		heldNotes.push({ code: event.code, note: note })
-		let label = noteLabel(note)
+		let label = noteToLabel(note)
 		if (label !== '') piano.triggerAttack(label)
 	}
 
@@ -309,7 +309,7 @@
 			.filter((held) => held.code === event.code)
 			.forEach((held) => {
 				selectedOutput?.stopNote(held.note)
-				let label = noteLabel(held.note)
+				let label = noteToLabel(held.note)
 				if (label !== '') piano.triggerRelease(label)
 			})
 		heldNotes = heldNotes.filter((held) => held.code !== event.code)
@@ -412,17 +412,19 @@
 				   padding-right: {5 * rowIndex * stagger}rem;"
 		>
 			{#each layout.filter((_, index) => index % rowCount === rowCount - rowIndex - 1) as key}
+				{@const pressed = heldNotes.some((note) => note.code === key.code)}
+				{@const noteLabel = noteToLabel(
+					indexToNote(layout.findIndex((other) => other.code === key.code)),
+				)}
+				{@const whiteKey = noteLabel && !noteLabel.includes('#')}
 				<div
 					class="border-2x m-2 flex h-20 w-20 flex-col items-center justify-center rounded-xl border-2"
-					class:border-primary={heldNotes.some((note) => note.code === key.code)}
-					class:bg-muted={!noteLabel(
-						indexToNote(layout.findIndex((other) => other.code === key.code)),
-					).includes('#')}
+					class:border-primary={pressed}
+					class:pt-2={pressed}
+					class:bg-muted={whiteKey}
 				>
-					<span class="text-xl font-semibold"
-						>{noteLabel(indexToNote(layout.findIndex((other) => other.code === key.code)))}</span
-					>
-					<span class="text-muted-foreground">{formatLabel(key.label)}</span>
+					<span class="text-xl font-semibold">{noteLabel}</span>
+					<span class="text-muted-foreground">{formatKeyLabel(key.label)}</span>
 				</div>
 			{/each}
 		</div>
