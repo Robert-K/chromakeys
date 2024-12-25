@@ -19,7 +19,7 @@
 			console.log('WebMidi could not be enabled', error)
 		})
 
-	let synth: Tone.PolySynth
+	let reverb: Tone.Reverb
 	let piano: Tone.Sampler
 
 	let selectedId = $state('')
@@ -31,10 +31,187 @@
 	}
 
 	let mapping = $state(false)
-	let layout = $state<Key[]>([])
+	let layout = $state<Key[]>([
+		{
+			label: '<',
+			code: 'IntlBackslash',
+		},
+		{
+			label: 'a',
+			code: 'KeyA',
+		},
+		{
+			label: 'w',
+			code: 'KeyW',
+		},
+		{
+			label: '3',
+			code: 'Digit3',
+		},
+		{
+			label: 'y',
+			code: 'KeyZ',
+		},
+		{
+			label: 's',
+			code: 'KeyS',
+		},
+		{
+			label: 'e',
+			code: 'KeyE',
+		},
+		{
+			label: '4',
+			code: 'Digit4',
+		},
+		{
+			label: 'x',
+			code: 'KeyX',
+		},
+		{
+			label: 'd',
+			code: 'KeyD',
+		},
+		{
+			label: 'r',
+			code: 'KeyR',
+		},
+		{
+			label: '5',
+			code: 'Digit5',
+		},
+		{
+			label: 'c',
+			code: 'KeyC',
+		},
+		{
+			label: 'f',
+			code: 'KeyF',
+		},
+		{
+			label: 't',
+			code: 'KeyT',
+		},
+		{
+			label: '6',
+			code: 'Digit6',
+		},
+		{
+			label: 'v',
+			code: 'KeyV',
+		},
+		{
+			label: 'g',
+			code: 'KeyG',
+		},
+		{
+			label: 'z',
+			code: 'KeyY',
+		},
+		{
+			label: '7',
+			code: 'Digit7',
+		},
+		{
+			label: 'b',
+			code: 'KeyB',
+		},
+		{
+			label: 'h',
+			code: 'KeyH',
+		},
+		{
+			label: 'u',
+			code: 'KeyU',
+		},
+		{
+			label: '8',
+			code: 'Digit8',
+		},
+		{
+			label: 'n',
+			code: 'KeyN',
+		},
+		{
+			label: 'j',
+			code: 'KeyJ',
+		},
+		{
+			label: 'i',
+			code: 'KeyI',
+		},
+		{
+			label: '9',
+			code: 'Digit9',
+		},
+		{
+			label: 'm',
+			code: 'KeyM',
+		},
+		{
+			label: 'k',
+			code: 'KeyK',
+		},
+		{
+			label: 'o',
+			code: 'KeyO',
+		},
+		{
+			label: '0',
+			code: 'Digit0',
+		},
+		{
+			label: ',',
+			code: 'Comma',
+		},
+		{
+			label: 'l',
+			code: 'KeyL',
+		},
+		{
+			label: 'p',
+			code: 'KeyP',
+		},
+		{
+			label: 'ß',
+			code: 'Minus',
+		},
+		{
+			label: '.',
+			code: 'Period',
+		},
+		{
+			label: 'ö',
+			code: 'Semicolon',
+		},
+		{
+			label: 'ü',
+			code: 'BracketLeft',
+		},
+		{
+			label: '´',
+			code: 'Equal',
+		},
+		{
+			label: '-',
+			code: 'Slash',
+		},
+		{
+			label: 'ä',
+			code: 'Quote',
+		},
+		{
+			label: '+',
+			code: 'BracketRight',
+		},
+		{
+			label: 'Backspace',
+			code: 'Backspace',
+		},
+	])
 
 	let rowCount = $state(4)
-	let rootNote = $state(60)
+	let rootNote = $state(48) // C3
 
 	let transpose = $state(0)
 
@@ -50,7 +227,7 @@
 	const DirectionIcon = $derived(directionIcons[rowDirection])
 
 	let stagger = $state(0.75)
-	
+
 	const indexToNote = (index: number) => {
 		let note = rootNote + index
 		note -= Math.floor(note / rowCount) * (rowCount - 3) - rowCount + 1
@@ -59,6 +236,7 @@
 	}
 
 	const noteLabel = (note: number) => {
+		if (note < 0 || note > 127) return ''
 		const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 		return notes[note % 12] + Math.floor(note / 12)
 	}
@@ -93,20 +271,23 @@
 
 	const handleKeyDown = (event: KeyboardEvent) => {
 		if (event.target instanceof HTMLInputElement) return // Ignore input events
-		event.preventDefault()
 		if (event.repeat) return // Ignore repeats
 		switch (event.code) {
 			case 'ArrowUp':
 				transpose += 1
+				event.preventDefault()
 				break
 			case 'ArrowDown':
 				transpose -= 1
+				event.preventDefault()
 				break
 			case 'ArrowLeft':
 				transpose -= 12
+				event.preventDefault()
 				break
 			case 'ArrowRight':
 				transpose += 12
+				event.preventDefault()
 				break
 		}
 		if (mapping) {
@@ -119,25 +300,36 @@
 		const note = indexToNote(index)
 		selectedOutput?.playNote(note)
 		heldNotes.push({ code: event.code, note: note })
-		piano.triggerAttack(noteLabel(note))
+		let label = noteLabel(note)
+		if (label !== '') piano.triggerAttack(label)
 	}
 
 	const handleKeyUp = (event: KeyboardEvent) => {
-		event.preventDefault()
 		heldNotes
 			.filter((held) => held.code === event.code)
 			.forEach((held) => {
 				selectedOutput?.stopNote(held.note)
-				piano.triggerRelease(noteLabel(held.note))
+				let label = noteLabel(held.note)
+				if (label !== '') piano.triggerRelease(label)
 			})
 		heldNotes = heldNotes.filter((held) => held.code !== event.code)
+	}
+
+	const toggleMapping = () => {
+		if (mapping) {
+			console.log(layout)
+		}
+		mapping = !mapping
+		if (mapping) {
+			layout = []
+		}
 	}
 
 	onMount(() => {
 		document.addEventListener('keydown', handleKeyDown)
 		document.addEventListener('keyup', handleKeyUp)
 
-		synth = new Tone.PolySynth(Tone.Synth).toDestination()
+		reverb = new Tone.Reverb({ decay: 4, preDelay: 0, wet: 0.3 }).toDestination()
 		piano = new Tone.Sampler({
 			urls: {
 				A0: 'A0.mp3',
@@ -173,7 +365,7 @@
 			},
 			release: 1,
 			baseUrl: 'https://tonejs.github.io/audio/salamander/',
-		}).toDestination()
+		}).connect(reverb)
 
 		return () => {
 			document.removeEventListener('keydown', handleKeyDown)
@@ -193,7 +385,7 @@
 	Rows
 	<Input type="number" bind:value={rowCount} />
 
-	<Button onclick={() => (mapping = !mapping)}>{mapping ? 'Stop' : 'Map'}</Button>
+	<Button onclick={toggleMapping}>{mapping ? 'Stop' : 'Map'}</Button>
 
 	<Button onclick={() => (rowDirection = (rowDirection + 1) % 4)}>
 		<DirectionIcon />
@@ -212,16 +404,27 @@
 	Transpose: {transpose > 0 ? '+' : ''}{transpose}
 </div>
 
-{#each { length: rowCount }, rowIndex}
-	<div class="flex" style="padding-left: {5 * (rowCount - rowIndex - 1) * stagger}rem;">
-		{#each layout.filter((_, index) => index % rowCount === rowCount - rowIndex - 1) as key}
-			<div
-				class="border-2x m-2 flex h-20 w-20 flex-col items-center rounded-xl border-2"
-				class:bg-muted={heldNotes.some((note) => note.code === key.code)}
-			>
-				<span>{noteLabel(indexToNote(layout.findIndex((other) => other.code === key.code)))}</span>
-				<span>{formatLabel(key.label)}</span>
-			</div>
-		{/each}
-	</div>
-{/each}
+<div class="flex h-screen flex-col items-center justify-center">
+	{#each { length: rowCount }, rowIndex}
+		<div
+			class="flex"
+			style="padding-left: {5 * (rowCount - rowIndex - 1) * stagger}rem;
+				   padding-right: {5 * rowIndex * stagger}rem;"
+		>
+			{#each layout.filter((_, index) => index % rowCount === rowCount - rowIndex - 1) as key}
+				<div
+					class="border-2x m-2 flex h-20 w-20 flex-col items-center justify-center rounded-xl border-2"
+					class:border-primary={heldNotes.some((note) => note.code === key.code)}
+					class:bg-muted={!noteLabel(
+						indexToNote(layout.findIndex((other) => other.code === key.code)),
+					).includes('#')}
+				>
+					<span class="text-xl font-semibold"
+						>{noteLabel(indexToNote(layout.findIndex((other) => other.code === key.code)))}</span
+					>
+					<span class="text-muted-foreground">{formatLabel(key.label)}</span>
+				</div>
+			{/each}
+		</div>
+	{/each}
+</div>
