@@ -19,7 +19,8 @@
 			console.log('WebMidi could not be enabled', error)
 		})
 
-	let synth: Tone.Synth
+	let synth: Tone.PolySynth
+	let piano: Tone.Sampler
 
 	let selectedId = $state('')
 	let selectedOutput = $derived(WebMidi.enabled ? WebMidi.getOutputById(selectedId) : null)
@@ -35,6 +36,8 @@
 	let rowCount = $state(4)
 	let rootNote = $state(60)
 
+	let transpose = $state(0)
+
 	interface HeldNote {
 		code: string
 		note: number
@@ -47,10 +50,11 @@
 	const DirectionIcon = $derived(directionIcons[rowDirection])
 
 	let stagger = $state(0.75)
-
+	
 	const indexToNote = (index: number) => {
 		let note = rootNote + index
-		note -= Math.floor(note / rowCount) * (rowCount - 3)
+		note -= Math.floor(note / rowCount) * (rowCount - 3) - rowCount + 1
+		note += transpose
 		return note
 	}
 
@@ -88,7 +92,23 @@
 	}
 
 	const handleKeyDown = (event: KeyboardEvent) => {
+		if (event.target instanceof HTMLInputElement) return // Ignore input events
+		event.preventDefault()
 		if (event.repeat) return // Ignore repeats
+		switch (event.code) {
+			case 'ArrowUp':
+				transpose += 1
+				break
+			case 'ArrowDown':
+				transpose -= 1
+				break
+			case 'ArrowLeft':
+				transpose -= 12
+				break
+			case 'ArrowRight':
+				transpose += 12
+				break
+		}
 		if (mapping) {
 			if (!layout.some((key) => key.code === event.code)) {
 				layout.push({ label: event.key, code: event.code })
@@ -99,15 +119,16 @@
 		const note = indexToNote(index)
 		selectedOutput?.playNote(note)
 		heldNotes.push({ code: event.code, note: note })
-		synth.triggerAttack(note)
+		piano.triggerAttack(noteLabel(note))
 	}
 
 	const handleKeyUp = (event: KeyboardEvent) => {
+		event.preventDefault()
 		heldNotes
 			.filter((held) => held.code === event.code)
 			.forEach((held) => {
 				selectedOutput?.stopNote(held.note)
-				synth.triggerRelease(held.note)
+				piano.triggerRelease(noteLabel(held.note))
 			})
 		heldNotes = heldNotes.filter((held) => held.code !== event.code)
 	}
@@ -116,7 +137,43 @@
 		document.addEventListener('keydown', handleKeyDown)
 		document.addEventListener('keyup', handleKeyUp)
 
-		synth = new Tone.Synth().toDestination()
+		synth = new Tone.PolySynth(Tone.Synth).toDestination()
+		piano = new Tone.Sampler({
+			urls: {
+				A0: 'A0.mp3',
+				C1: 'C1.mp3',
+				'D#1': 'Ds1.mp3',
+				'F#1': 'Fs1.mp3',
+				A1: 'A1.mp3',
+				C2: 'C2.mp3',
+				'D#2': 'Ds2.mp3',
+				'F#2': 'Fs2.mp3',
+				A2: 'A2.mp3',
+				C3: 'C3.mp3',
+				'D#3': 'Ds3.mp3',
+				'F#3': 'Fs3.mp3',
+				A3: 'A3.mp3',
+				C4: 'C4.mp3',
+				'D#4': 'Ds4.mp3',
+				'F#4': 'Fs4.mp3',
+				A4: 'A4.mp3',
+				C5: 'C5.mp3',
+				'D#5': 'Ds5.mp3',
+				'F#5': 'Fs5.mp3',
+				A5: 'A5.mp3',
+				C6: 'C6.mp3',
+				'D#6': 'Ds6.mp3',
+				'F#6': 'Fs6.mp3',
+				A6: 'A6.mp3',
+				C7: 'C7.mp3',
+				'D#7': 'Ds7.mp3',
+				'F#7': 'Fs7.mp3',
+				A7: 'A7.mp3',
+				C8: 'C8.mp3',
+			},
+			release: 1,
+			baseUrl: 'https://tonejs.github.io/audio/salamander/',
+		}).toDestination()
 
 		return () => {
 			document.removeEventListener('keydown', handleKeyDown)
@@ -151,6 +208,8 @@
 	/>
 
 	<ThemeToggle />
+
+	Transpose: {transpose > 0 ? '+' : ''}{transpose}
 </div>
 
 {#each { length: rowCount }, rowIndex}
@@ -160,8 +219,8 @@
 				class="border-2x m-2 flex h-20 w-20 flex-col items-center rounded-xl border-2"
 				class:bg-muted={heldNotes.some((note) => note.code === key.code)}
 			>
-				<div>{noteLabel(indexToNote(layout.findIndex((other) => other.code === key.code)))}</div>
-				<div>{formatLabel(key.label)}</div>
+				<span>{noteLabel(indexToNote(layout.findIndex((other) => other.code === key.code)))}</span>
+				<span>{formatLabel(key.label)}</span>
 			</div>
 		{/each}
 	</div>
