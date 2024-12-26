@@ -8,12 +8,18 @@
 	import { cn } from '$lib/utils.js'
 	import type { Output } from 'webmidi'
 
-	let { outputs, selectedId = $bindable() }: { outputs: Output[], selectedId: string } = $props()
+	let {
+		outputs,
+		selectedId = $bindable(),
+		id,
+	}: { outputs: Output[]; selectedId: string; id: string } = $props()
 
-    let options = $derived(outputs.map((output) => ({
-        label: output.name,
-        value: output.id,
-    })))
+	let options = $derived(
+		outputs.map((output) => ({
+			label: output.name,
+			value: output.id,
+		})),
+	)
 
 	let open = $state(false)
 	let triggerRef = $state<HTMLButtonElement>(null!)
@@ -38,6 +44,7 @@
 				variant="outline"
 				class="w-full justify-between"
 				{...props}
+				{id}
 				role="combobox"
 				aria-expanded={open}
 			>

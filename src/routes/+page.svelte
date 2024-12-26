@@ -9,6 +9,9 @@
 	import Slider from '$lib/components/ui/slider/slider.svelte'
 	import * as Tone from 'tone'
 	import { mode } from 'mode-watcher'
+	import { formatKeyLabel, noteToLabel } from '$lib/utils'
+	import { QWERTZ } from '$lib/layouts'
+	import Label from '$lib/components/ui/label/label.svelte'
 
 	let outputs = $state<Output[]>([])
 
@@ -32,184 +35,7 @@
 	}
 
 	let mapping = $state(false)
-	let layout = $state<Key[]>([
-		{
-			label: '<',
-			code: 'IntlBackslash',
-		},
-		{
-			label: 'a',
-			code: 'KeyA',
-		},
-		{
-			label: 'w',
-			code: 'KeyW',
-		},
-		{
-			label: '3',
-			code: 'Digit3',
-		},
-		{
-			label: 'y',
-			code: 'KeyZ',
-		},
-		{
-			label: 's',
-			code: 'KeyS',
-		},
-		{
-			label: 'e',
-			code: 'KeyE',
-		},
-		{
-			label: '4',
-			code: 'Digit4',
-		},
-		{
-			label: 'x',
-			code: 'KeyX',
-		},
-		{
-			label: 'd',
-			code: 'KeyD',
-		},
-		{
-			label: 'r',
-			code: 'KeyR',
-		},
-		{
-			label: '5',
-			code: 'Digit5',
-		},
-		{
-			label: 'c',
-			code: 'KeyC',
-		},
-		{
-			label: 'f',
-			code: 'KeyF',
-		},
-		{
-			label: 't',
-			code: 'KeyT',
-		},
-		{
-			label: '6',
-			code: 'Digit6',
-		},
-		{
-			label: 'v',
-			code: 'KeyV',
-		},
-		{
-			label: 'g',
-			code: 'KeyG',
-		},
-		{
-			label: 'z',
-			code: 'KeyY',
-		},
-		{
-			label: '7',
-			code: 'Digit7',
-		},
-		{
-			label: 'b',
-			code: 'KeyB',
-		},
-		{
-			label: 'h',
-			code: 'KeyH',
-		},
-		{
-			label: 'u',
-			code: 'KeyU',
-		},
-		{
-			label: '8',
-			code: 'Digit8',
-		},
-		{
-			label: 'n',
-			code: 'KeyN',
-		},
-		{
-			label: 'j',
-			code: 'KeyJ',
-		},
-		{
-			label: 'i',
-			code: 'KeyI',
-		},
-		{
-			label: '9',
-			code: 'Digit9',
-		},
-		{
-			label: 'm',
-			code: 'KeyM',
-		},
-		{
-			label: 'k',
-			code: 'KeyK',
-		},
-		{
-			label: 'o',
-			code: 'KeyO',
-		},
-		{
-			label: '0',
-			code: 'Digit0',
-		},
-		{
-			label: ',',
-			code: 'Comma',
-		},
-		{
-			label: 'l',
-			code: 'KeyL',
-		},
-		{
-			label: 'p',
-			code: 'KeyP',
-		},
-		{
-			label: 'ß',
-			code: 'Minus',
-		},
-		{
-			label: '.',
-			code: 'Period',
-		},
-		{
-			label: 'ö',
-			code: 'Semicolon',
-		},
-		{
-			label: 'ü',
-			code: 'BracketLeft',
-		},
-		{
-			label: '´',
-			code: 'Equal',
-		},
-		{
-			label: '-',
-			code: 'Slash',
-		},
-		{
-			label: 'ä',
-			code: 'Quote',
-		},
-		{
-			label: '+',
-			code: 'BracketRight',
-		},
-		{
-			label: 'Backspace',
-			code: 'Backspace',
-		},
-	])
+	let layout = $state<Key[]>(QWERTZ)
 
 	let rowCount = $state(4)
 	let rootNote = $state(48) // C3
@@ -236,40 +62,6 @@
 		note -= Math.floor(note / rowCount) * (rowCount - 3) - rowCount + 1
 		note += transpose
 		return note
-	}
-
-	const noteToLabel = (note: number) => {
-		if (note < 0 || note > 127) return ''
-		const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-		return notes[note % 12] + Math.floor(note / 12)
-	}
-
-	const formatKeyLabel = (label: string) => {
-		switch (label) {
-			case 'ArrowUp':
-				return '↑'
-			case 'ArrowDown':
-				return '↓'
-			case 'ArrowLeft':
-				return '←'
-			case 'ArrowRight':
-				return '→'
-			case 'Space':
-				return '␣'
-			case 'Enter':
-				return '↵'
-			case 'Backspace':
-				return '⌫'
-			case 'Tab':
-				return '⇥'
-			case 'ShiftLeft':
-			case 'ShiftRight':
-				return '⇧'
-			case 'Dead':
-				return '´'
-			default:
-				return label.replace('´', '').toUpperCase()
-		}
 	}
 
 	const handleKeyDown = (event: KeyboardEvent) => {
@@ -304,7 +96,7 @@
 		selectedOutput?.playNote(note)
 		heldNotes.push({ code: event.code, note: note })
 		let label = noteToLabel(note)
-		if (label !== '') piano.triggerAttack(label)
+		if (label !== '') piano?.triggerAttack(label)
 	}
 
 	const handleKeyUp = (event: KeyboardEvent) => {
@@ -313,7 +105,7 @@
 			.forEach((held) => {
 				selectedOutput?.stopNote(held.note)
 				let label = noteToLabel(held.note)
-				if (label !== '') piano.triggerRelease(label)
+				if (label !== '') piano?.triggerRelease(label)
 			})
 		heldNotes = heldNotes.filter((held) => held.code !== event.code)
 	}
@@ -328,10 +120,7 @@
 		}
 	}
 
-	onMount(() => {
-		document.addEventListener('keydown', handleKeyDown)
-		document.addEventListener('keyup', handleKeyUp)
-
+	const loadAudio = async () => {
 		reverb = new Tone.Reverb({ decay: 4, preDelay: 0, wet: 0.3 }).toDestination()
 		piano = new Tone.Sampler({
 			urls: {
@@ -369,6 +158,13 @@
 			release: 1,
 			baseUrl: 'https://tonejs.github.io/audio/salamander/',
 		}).connect(reverb)
+	}
+
+	onMount(() => {
+		document.addEventListener('keydown', handleKeyDown)
+		document.addEventListener('keyup', handleKeyUp)
+
+		loadAudio()
 
 		return () => {
 			document.removeEventListener('keydown', handleKeyDown)
@@ -378,33 +174,36 @@
 </script>
 
 <div class="flex w-64 flex-col gap-4 p-4">
-	<OutputSelect bind:selectedId {outputs} />
+	<Label for="output">MIDI Output</Label>
+	<OutputSelect bind:selectedId {outputs} id="output" />
 
-	<Button onclick={() => selectedOutput?.playNote(60, { duration: 100 })}>Play Note</Button>
+	<Label for="rootNote">Root Note</Label>
+	<Input type="number" bind:value={rootNote} id="rootNote" />
 
-	Root
-	<Input type="number" bind:value={rootNote} />
+	<Label for="rowCount">Number of Rows</Label>
+	<Input type="number" bind:value={rowCount} id="rowCount"/>
 
-	Rows
-	<Input type="number" bind:value={rowCount} />
+	<Button onclick={toggleMapping}>{mapping ? 'Finish Remapping' : 'Remap Keys'}</Button>
 
-	<Button onclick={toggleMapping}>{mapping ? 'Stop' : 'Map'}</Button>
-
-	<Button onclick={() => (rowDirection = (rowDirection + 1) % 4)}>
+	<Label for="rowDirection">Row Direction</Label>
+	<Button onclick={() => (rowDirection = (rowDirection + 1) % 4)} id="rowDirection">
 		<DirectionIcon />
 	</Button>
 
+	<Label for="stagger">Row Stagger</Label>
 	<Slider
 		value={[stagger]}
 		onValueChange={(value) => (stagger = value[0])}
 		min={0}
 		max={1}
 		step={0.05}
+		id="stagger"
 	/>
 
 	<ThemeToggle />
 
-	Transpose: {transpose > 0 ? '+' : ''}{transpose}
+	<Label for="transpose">Transpose</Label>
+	<Input type="number" bind:value={transpose} id="transpose"/>
 </div>
 
 <div class="flex h-screen flex-col items-center justify-center">
