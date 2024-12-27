@@ -9,8 +9,8 @@
 <ModeWatcher />
 <Sidebar.Provider>
 	<AppSidebar />
-	<main>
-		<Sidebar.Trigger />
+	<main class="w-full">
+		<Sidebar.Trigger class="absolute m-2" />
 		{@render children?.()}
 	</main>
 </Sidebar.Provider>

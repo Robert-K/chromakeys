@@ -44,7 +44,6 @@
 				variant="outline"
 				class="w-full justify-between"
 				{...props}
-				{id}
 				role="combobox"
 				aria-expanded={open}
 			>

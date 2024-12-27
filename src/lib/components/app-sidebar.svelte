@@ -6,7 +6,7 @@
 	<Sidebar.Header />
 	<Sidebar.Content>
 		<Sidebar.Group />
-        Hello, I am content :)
+		<div id="options"></div>
 		<Sidebar.Group />
 	</Sidebar.Content>
 	<Sidebar.Footer />

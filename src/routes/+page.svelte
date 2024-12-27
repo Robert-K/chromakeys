@@ -12,6 +12,7 @@
 	import { formatKeyLabel, noteToLabel } from '$lib/utils'
 	import { QWERTZ } from '$lib/layouts'
 	import Label from '$lib/components/ui/label/label.svelte'
+	import { Portal } from 'bits-ui'
 
 	let outputs = $state<Output[]>([])
 
@@ -66,6 +67,9 @@
 
 	const handleKeyDown = (event: KeyboardEvent) => {
 		if (event.target instanceof HTMLInputElement) return // Ignore input events
+		const targetRole = (event.target as HTMLElement).getAttribute('role')
+		console.log(targetRole)
+		if (targetRole && ['combobox', 'slider'].includes(targetRole)) return
 		if (event.repeat) return // Ignore repeats
 		switch (event.code) {
 			case 'ArrowUp':
@@ -173,38 +177,40 @@
 	})
 </script>
 
-<div class="flex w-64 flex-col gap-4 p-4">
-	<Label for="output">MIDI Output</Label>
-	<OutputSelect bind:selectedId {outputs} id="output" />
+<Portal to="#options">
+	<div class="flex flex-col gap-4 p-2">
+		<Label for="output">MIDI Output</Label>
+		<OutputSelect bind:selectedId {outputs} id="output" />
 
-	<Label for="rootNote">Root Note</Label>
-	<Input type="number" bind:value={rootNote} id="rootNote" />
+		<Label for="rootNote">Root Note</Label>
+		<Input type="number" bind:value={rootNote} id="rootNote" />
 
-	<Label for="rowCount">Number of Rows</Label>
-	<Input type="number" bind:value={rowCount} id="rowCount"/>
+		<Label for="rowCount">Number of Rows</Label>
+		<Input type="number" bind:value={rowCount} id="rowCount" />
 
-	<Button onclick={toggleMapping}>{mapping ? 'Finish Remapping' : 'Remap Keys'}</Button>
+		<Button onclick={toggleMapping}>{mapping ? 'Finish Remapping' : 'Remap Keys'}</Button>
 
-	<Label for="rowDirection">Row Direction</Label>
-	<Button onclick={() => (rowDirection = (rowDirection + 1) % 4)} id="rowDirection">
-		<DirectionIcon />
-	</Button>
+		<Label for="rowDirection">Row Direction</Label>
+		<Button onclick={() => (rowDirection = (rowDirection + 1) % 4)} id="rowDirection">
+			<DirectionIcon />
+		</Button>
 
-	<Label for="stagger">Row Stagger</Label>
-	<Slider
-		value={[stagger]}
-		onValueChange={(value) => (stagger = value[0])}
-		min={0}
-		max={1}
-		step={0.05}
-		id="stagger"
-	/>
+		<Label for="stagger">Row Stagger</Label>
+		<Slider
+			value={[stagger]}
+			onValueChange={(value) => (stagger = value[0])}
+			min={0}
+			max={1}
+			step={0.05}
+			id="stagger"
+		/>
 
-	<ThemeToggle />
+		<ThemeToggle />
 
-	<Label for="transpose">Transpose</Label>
-	<Input type="number" bind:value={transpose} id="transpose"/>
-</div>
+		<Label for="transpose">Transpose</Label>
+		<Input type="number" bind:value={transpose} id="transpose" />
+	</div>
+</Portal>
 
 <div class="flex h-screen flex-col items-center justify-center">
 	{#each { length: rowCount }, rowIndex}
