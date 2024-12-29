@@ -81,3 +81,23 @@ html {
 	-ms-overflow-style: none; /* IE and Edge */
 	scrollbar-width: none; /* Firefox */
 }
+
+.pitch-bend {
+	writing-mode: vertical-lr;
+	direction: rtl;
+	-webkit-appearance: none;
+	@apply h-64 w-16 rounded-lg border-2 bg-transparent;
+}
+
+.pitch-bend::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	@apply w-full h-8 border-none bg-muted;
+}
+.pitch-bend::-moz-range-thumb {
+	-webkit-appearance: none;
+	@apply w-full h-8 border-none bg-muted;
+}
+.pitch-bend::-ms-thumb {
+	-webkit-appearance: none;
+	@apply w-full h-8 border-none bg-muted;
+}

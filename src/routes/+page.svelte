@@ -1,6 +1,5 @@
 <script lang="ts">
 	import OutputSelect from '$lib/components/output-select.svelte'
-	import ThemeToggle from '$lib/components/theme-toggle.svelte'
 	import Button from '$lib/components/ui/button/button.svelte'
 	import Input from '$lib/components/ui/input/input.svelte'
 	import { onMount } from 'svelte'
@@ -13,6 +12,7 @@
 	import { QWERTZ } from '$lib/layouts'
 	import Label from '$lib/components/ui/label/label.svelte'
 	import { Portal } from 'bits-ui'
+	import PitchBend from '$lib/components/pitch-bend.svelte'
 
 	let outputs = $state<Output[]>([])
 
@@ -43,6 +43,10 @@
 
 	let transpose = $state(0)
 
+	let pitchBend = $state(0)
+
+	let pitchBendRange = $state(2)
+
 	interface HeldNote {
 		code: string
 		note: number
@@ -65,11 +69,12 @@
 		return note
 	}
 
+	const CC_SUSTAIN = 64
+
 	const handleKeyDown = (event: KeyboardEvent) => {
 		if (event.target instanceof HTMLInputElement) return // Ignore input events
-		const targetRole = (event.target as HTMLElement).getAttribute('role')
-		console.log(targetRole)
-		if (targetRole && ['combobox', 'slider'].includes(targetRole)) return
+		// const targetRole = (event.target as HTMLElement).getAttribute('role')
+		// if (targetRole && ['combobox', 'slider'].includes(targetRole)) return
 		if (event.repeat) return // Ignore repeats
 		switch (event.code) {
 			case 'ArrowUp':
@@ -88,6 +93,10 @@
 				transpose += 12
 				event.preventDefault()
 				break
+			case 'Space':
+				selectedOutput?.sendControlChange(CC_SUSTAIN, 127)
+				event.preventDefault()
+				break
 		}
 		if (mapping) {
 			if (!layout.some((key) => key.code === event.code)) {
@@ -104,6 +113,11 @@
 	}
 
 	const handleKeyUp = (event: KeyboardEvent) => {
+		switch (event.code) {
+			case 'Space':
+				selectedOutput?.sendControlChange(CC_SUSTAIN, 0)
+				break
+		}
 		heldNotes
 			.filter((held) => held.code === event.code)
 			.forEach((held) => {
@@ -123,6 +137,14 @@
 			layout = []
 		}
 	}
+
+	$effect(() => {
+		selectedOutput?.sendPitchBend(pitchBend)
+	})
+
+	$effect(() => {
+		selectedOutput?.sendPitchBendRange(pitchBendRange)
+	})
 
 	const loadAudio = async () => {
 		reverb = new Tone.Reverb({ decay: 4, preDelay: 0, wet: 0.3 }).toDestination()
@@ -178,9 +200,12 @@
 </script>
 
 <Portal to="#options">
-	<div class="flex flex-col gap-4 p-2">
+	<div class="flex flex-col gap-4 p-4">
 		<Label for="output">MIDI Output</Label>
 		<OutputSelect bind:selectedId {outputs} id="output" />
+
+		<Label for="pitchBendRange">Pitch Bend Range</Label>
+		<Input type="number" bind:value={pitchBendRange} id="pitchBendRange" />
 
 		<Label for="rootNote">Root Note</Label>
 		<Input type="number" bind:value={rootNote} id="rootNote" />
@@ -205,14 +230,13 @@
 			id="stagger"
 		/>
 
-		<ThemeToggle />
-
 		<Label for="transpose">Transpose</Label>
 		<Input type="number" bind:value={transpose} id="transpose" />
 	</div>
 </Portal>
 
 <div class="flex h-screen flex-col items-center justify-center">
+	<PitchBend bind:pitchBend />
 	{#each { length: rowCount }, rowIndex}
 		<div
 			class="flex"
