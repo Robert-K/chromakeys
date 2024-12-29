@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { onMount } from "svelte"
 
-	let { pitchBend = $bindable(0), onchange }: { pitchBend: number, onchange: (value: number) => void } = $props()
+	let { onchange }: { onchange: (value: number) => void } = $props()
+
+    let pitchBend = $state(0)
 
 	let targetValue = $state(0)
 
@@ -61,7 +63,7 @@
 		value={pitchBend}
 		min={-pitchBendRange}
 		max={pitchBendRange}
-		step={1 / 16383}
+		step={1 / 16384}
 		disabled
 		class="pitch-bend relative"
 	/>
@@ -70,7 +72,7 @@
         bind:value={targetValue}
         min={-pitchBendRange}
 		max={pitchBendRange}
-		step={1 / 16383}
+		step={1 / 16384}
 		onmousedown={handleDragStart}
 		onmouseup={handleDragEnd}
 		ontouchstart={handleDragStart}

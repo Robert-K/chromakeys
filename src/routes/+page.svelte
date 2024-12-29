@@ -1,4 +1,6 @@
 <script lang="ts">
+	const ENABLE_AUDIO = false
+
 	import OutputSelect from '$lib/components/output-select.svelte'
 	import Button from '$lib/components/ui/button/button.svelte'
 	import Input from '$lib/components/ui/input/input.svelte'
@@ -44,10 +46,11 @@
 
 	let transpose = $state(0)
 
-	let pitchBend = $state(0)
-
 	let pitchBendRange = $state(2)
 
+	const handlePitchBend = (value: number) => {
+		selectedOutput?.sendPitchBend(value)
+	}
 	interface HeldNote {
 		code: string
 		note: number
@@ -110,7 +113,7 @@
 		selectedOutput?.playNote(note)
 		heldNotes.push({ code: event.code, note: note })
 		let label = noteToLabel(note)
-		if (label !== '' && piano.loaded) piano?.triggerAttack(label)
+		if (label !== '' && piano?.loaded) piano?.triggerAttack(label)
 	}
 
 	const handleKeyUp = (event: KeyboardEvent) => {
@@ -124,7 +127,7 @@
 			.forEach((held) => {
 				selectedOutput?.stopNote(held.note)
 				let label = noteToLabel(held.note)
-				if (label !== '' && piano.loaded) piano?.triggerRelease(label)
+				if (label !== '' && piano?.loaded) piano?.triggerRelease(label)
 			})
 		heldNotes = heldNotes.filter((held) => held.code !== event.code)
 	}
@@ -183,7 +186,7 @@
 		document.addEventListener('keydown', handleKeyDown)
 		document.addEventListener('keyup', handleKeyUp)
 
-		loadAudio()
+		if (ENABLE_AUDIO) loadAudio()
 
 		return () => {
 			document.removeEventListener('keydown', handleKeyDown)
@@ -229,7 +232,7 @@
 </Portal>
 
 <div class="flex h-screen flex-col items-center justify-center">
-	<PitchBend bind:pitchBend onchange={()=>selectedOutput?.sendPitchBend(pitchBend)} />
+	<PitchBend onchange={handlePitchBend} />
 	{#each { length: rowCount }, rowIndex}
 		<div
 			class="flex"
