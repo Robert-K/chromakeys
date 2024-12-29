@@ -1,47 +1,80 @@
 <script lang="ts">
-	let { pitchBend = $bindable(0) } = $props()
+	import { onMount } from "svelte"
+
+	let { pitchBend = $bindable(0), onchange }: { pitchBend: number, onchange: (value: number) => void } = $props()
+
+	let targetValue = $state(0)
 
 	let pitchBendRange = $state(1)
 
-	let returnSpeed = $state(20)
+	let speed = $state(20)
 
 	let dragging = false
+
+    let animationFrame = 0
 
 	function handleDragStart() {
 		dragging = true
 	}
 
-	function handleDragEnd() {
+	async function handleDragEnd() {
 		dragging = false
-		slideCenter()
+        setTimeout(() => {
+            targetValue = 0
+        }, 0)
 	}
 
-	function slideCenter(lastTime: number = performance.now()) {
-		if (!dragging && pitchBend !== 0) {
-			const currentTime = performance.now()
-			const deltaTime = (currentTime - lastTime) / 1000 // convert to seconds
-			const step = returnSpeed * deltaTime
+	function slideToTarget(lastTime: number = performance.now()) {
+		const currentTime = performance.now()
+		if (pitchBend !== targetValue || dragging) {
+			const deltaTime = currentTime - lastTime
+			const direction = Math.sign(targetValue - pitchBend)
+            const prevPitchBend = pitchBend
 
-			if (pitchBend > 0) {
-				pitchBend = Math.max(0, pitchBend - step)
-			} else {
-				pitchBend = Math.min(0, pitchBend + step)
-			}
+			pitchBend += direction * speed * deltaTime / 1000
 
-			requestAnimationFrame(() => slideCenter(currentTime))
+            if (direction > 0 && pitchBend > targetValue) {
+                pitchBend = targetValue
+            } else if (direction < 0 && pitchBend < targetValue) {
+                pitchBend = targetValue
+            }
+
+            if (prevPitchBend !== pitchBend) {
+                onchange(pitchBend)
+            }
 		}
+		animationFrame = requestAnimationFrame(() => slideToTarget(currentTime))
 	}
+
+    onMount(() => {
+        slideToTarget()
+
+        return () => {
+            cancelAnimationFrame(animationFrame)
+        }
+    })
 </script>
 
-<input
-	type="range"
-	bind:value={pitchBend}
-	min={-pitchBendRange}
-	max={pitchBendRange}
-	step={1 / 16383}
-	class="absolute left-4 pitch-bend"
-	onmousedown={handleDragStart}
-	onmouseup={handleDragEnd}
-	ontouchstart={handleDragStart}
-	ontouchend={handleDragEnd}
-/>
+<div class="absolute left-4">
+	<input
+		type="range"
+		value={pitchBend}
+		min={-pitchBendRange}
+		max={pitchBendRange}
+		step={1 / 16383}
+		disabled
+		class="pitch-bend relative"
+	/>
+	<input
+		type="range"
+        bind:value={targetValue}
+        min={-pitchBendRange}
+		max={pitchBendRange}
+		step={1 / 16383}
+		onmousedown={handleDragStart}
+		onmouseup={handleDragEnd}
+		ontouchstart={handleDragStart}
+		ontouchend={handleDragEnd}
+		class="pitch-bend-input absolute left-0"
+	/>
+</div>

@@ -8,7 +8,7 @@
 </script>
 
 <ModeWatcher />
-<Sidebar.Provider>
+<Sidebar.Provider open={false}>
 	<AppSidebar />
 	<main class="w-full min-w-0">
 		<Sidebar.Trigger class="absolute m-2" />

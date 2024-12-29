@@ -19,6 +19,7 @@
 	WebMidi.enable()
 		.then(() => {
 			outputs = WebMidi.outputs
+			selectedId = outputs[0]?.id
 		})
 		.catch((error) => {
 			console.log('WebMidi could not be enabled', error)
@@ -109,7 +110,7 @@
 		selectedOutput?.playNote(note)
 		heldNotes.push({ code: event.code, note: note })
 		let label = noteToLabel(note)
-		if (label !== '') piano?.triggerAttack(label)
+		if (label !== '' && piano.loaded) piano?.triggerAttack(label)
 	}
 
 	const handleKeyUp = (event: KeyboardEvent) => {
@@ -123,7 +124,7 @@
 			.forEach((held) => {
 				selectedOutput?.stopNote(held.note)
 				let label = noteToLabel(held.note)
-				if (label !== '') piano?.triggerRelease(label)
+				if (label !== '' && piano.loaded) piano?.triggerRelease(label)
 			})
 		heldNotes = heldNotes.filter((held) => held.code !== event.code)
 	}
@@ -137,14 +138,6 @@
 			layout = []
 		}
 	}
-
-	$effect(() => {
-		selectedOutput?.sendPitchBend(pitchBend)
-	})
-
-	$effect(() => {
-		selectedOutput?.sendPitchBendRange(pitchBendRange)
-	})
 
 	const loadAudio = async () => {
 		reverb = new Tone.Reverb({ decay: 4, preDelay: 0, wet: 0.3 }).toDestination()
@@ -236,7 +229,7 @@
 </Portal>
 
 <div class="flex h-screen flex-col items-center justify-center">
-	<PitchBend bind:pitchBend />
+	<PitchBend bind:pitchBend onchange={()=>selectedOutput?.sendPitchBend(pitchBend)} />
 	{#each { length: rowCount }, rowIndex}
 		<div
 			class="flex"

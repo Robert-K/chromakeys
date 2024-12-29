@@ -82,11 +82,19 @@ html {
 	scrollbar-width: none; /* Firefox */
 }
 
-.pitch-bend {
+.pitch-bend,
+.pitch-bend-input {
 	writing-mode: vertical-lr;
 	direction: rtl;
 	-webkit-appearance: none;
+}
+
+.pitch-bend {
 	@apply h-64 w-16 rounded-lg border-2 bg-transparent;
+}
+
+.pitch-bend-input {
+	@apply opacity-0 size-full;
 }
 
 .pitch-bend::-webkit-slider-thumb {
@@ -100,4 +108,16 @@ html {
 .pitch-bend::-ms-thumb {
 	-webkit-appearance: none;
 	@apply w-full h-8 border-none bg-muted;
+}
+.pitch-bend-input::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	@apply w-full h-8;
+}
+.pitch-bend-input::-moz-range-thumb {
+	-webkit-appearance: none;
+	@apply w-full h-8;
+}
+.pitch-bend-input::-ms-thumb {
+	-webkit-appearance: none;
+	@apply w-full h-8;
 }
