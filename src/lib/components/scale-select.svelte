@@ -6,25 +6,25 @@
 	import * as Popover from '$lib/components/ui/popover/index.js'
 	import { Button } from '$lib/components/ui/button/index.js'
 	import { cn } from '$lib/utils.js'
-	import type { Output } from 'webmidi'
+	import type { Scale } from '$lib/scales'
 
 	let {
-		outputs,
-		selectedOutput = $bindable(),
+		scales,
+		selectedScale = $bindable(),
 		id,
-	}: { outputs: Output[]; selectedOutput: Output | null | undefined; id: string } = $props()
+	}: { scales: Scale[]; selectedScale: Scale | null; id: string } = $props()
 
 	let options = $derived(
-		outputs.map((output) => ({
-			label: output.name,
-			value: output.id,
+		scales.map((scale, index) => ({
+			label: scale.name,
+			value: index
 		})),
 	)
 
 	let open = $state(false)
 	let triggerRef = $state<HTMLButtonElement>(null!)
 
-	const selectedValue = $derived(selectedOutput?.name)
+	const selectedValue = $derived(selectedScale?.name)
 
 	// We want to refocus the trigger button when the user selects
 	// an item from the list so users can continue navigating the
@@ -60,13 +60,13 @@
 				<Command.Group>
 					{#each options as option}
 						<Command.Item
-							value={option.value}
+							value={option.value.toString()}
 							onSelect={() => {
-								selectedOutput = outputs.find((output) => output.id == option.value)
+								selectedScale = scales[option.value]
 								closeAndFocusTrigger()
 							}}
 						>
-							<Check class={cn(selectedOutput?.id !== option.value && 'text-transparent')} />
+							<Check class={cn(selectedScale !== scales[option.value] && 'text-transparent')} />
 							{option.label}
 						</Command.Item>
 					{/each}

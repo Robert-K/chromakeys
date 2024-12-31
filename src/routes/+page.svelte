@@ -16,13 +16,15 @@
 	import { Portal } from 'bits-ui'
 	import PitchBend from '$lib/components/pitch-bend.svelte'
 	import Switch from '$lib/components/ui/switch/switch.svelte'
+	import { scales } from '$lib/scales'
+	import ScaleSelect from '$lib/components/scale-select.svelte'
 
 	let outputs = $state<Output[]>([])
 
 	WebMidi.enable()
 		.then(() => {
 			outputs = WebMidi.outputs
-			selectedId = outputs[0]?.id
+			selectedOutput = outputs[0]
 		})
 		.catch((error) => {
 			console.log('WebMidi could not be enabled', error)
@@ -31,9 +33,7 @@
 	let reverb: Tone.Reverb
 	let piano: Tone.Sampler
 
-	let selectedId = $state('')
-	let selectedOutput = $derived(WebMidi.enabled ? WebMidi.getOutputById(selectedId) : null)
-
+	let selectedOutput = $state<Output | null>(null)
 	interface Key {
 		label: string
 		code: string
@@ -49,7 +49,7 @@
 
 	let pitchBendRange = $state(2)
 
-	let scale = $state(null) // TODO: Not implemented yet
+	let selectedScale = $state(null) // TODO: Not implemented yet
 
 	let enforceScale = $state(false)
 
@@ -203,12 +203,13 @@
 <Portal to="#options">
 	<div class="flex flex-col gap-4 p-4">
 		<Label for="output">MIDI Output</Label>
-		<OutputSelect bind:selectedId {outputs} id="output" />
+		<OutputSelect bind:selectedOutput {outputs} id="output" />
 
 		<Label for="pitchBendRange">Pitch Bend Range</Label>
 		<Input type="number" bind:value={pitchBendRange} id="pitchBendRange" />
 
 		<Label for="scale">Scale</Label>
+		<ScaleSelect bind:selectedScale {scales} id="scale" />
 
 		<div class="flex justify-between pr-1">
 			<Label for="enforceScale">Enforce Scale</Label>
