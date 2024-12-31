@@ -15,6 +15,7 @@
 	import Label from '$lib/components/ui/label/label.svelte'
 	import { Portal } from 'bits-ui'
 	import PitchBend from '$lib/components/pitch-bend.svelte'
+	import Switch from '$lib/components/ui/switch/switch.svelte'
 
 	let outputs = $state<Output[]>([])
 
@@ -48,6 +49,10 @@
 
 	let pitchBendRange = $state(2)
 
+	let scale = $state(null) // TODO: Not implemented yet
+
+	let enforceScale = $state(false)
+
 	const handlePitchBend = (value: number) => {
 		selectedOutput?.sendPitchBend(value)
 	}
@@ -59,7 +64,7 @@
 	let heldNotes = $state<HeldNote[]>([])
 
 	const directionIcons = [MoveUpRight, MoveDownRight, MoveDownLeft, MoveUpLeft]
-	let rowDirection = $state(0)
+	let rowDirection = $state(0) // TODO: This doesn't do anything yet
 	const DirectionIcon = $derived(directionIcons[rowDirection])
 
 	let darkMode = $derived($mode === 'dark')
@@ -203,6 +208,13 @@
 		<Label for="pitchBendRange">Pitch Bend Range</Label>
 		<Input type="number" bind:value={pitchBendRange} id="pitchBendRange" />
 
+		<Label for="scale">Scale</Label>
+
+		<div class="flex justify-between pr-1">
+			<Label for="enforceScale">Enforce Scale</Label>
+			<Switch bind:checked={enforceScale} id="enforceScale" />
+		</div>
+
 		<Label for="rootNote">Root Note</Label>
 		<Input type="number" bind:value={rootNote} id="rootNote" />
 
@@ -240,6 +252,7 @@
 				   padding-right: {5 * rowIndex * stagger}rem;"
 		>
 			{#each layout.filter((_, index) => index % rowCount === rowCount - rowIndex - 1) as key}
+				<!-- TODO: Refactor keys and make them buttons + MPE -->
 				{@const pressed = heldNotes.some((note) => note.code === key.code)}
 				{@const noteLabel = noteToLabel(
 					indexToNote(layout.findIndex((other) => other.code === key.code)),
