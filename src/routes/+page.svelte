@@ -53,6 +53,8 @@
 
 	let enforceScale = $state(false)
 
+	let velocity = $state(100)
+
 	const handlePitchBend = (value: number) => {
 		selectedOutput?.sendPitchBend(value)
 	}
@@ -115,7 +117,7 @@
 		let index = layout.findIndex((key) => key.code === event.code)
 		if (index === -1) return
 		const note = indexToNote(index)
-		selectedOutput?.playNote(note)
+		selectedOutput?.playNote(note, { rawAttack: velocity })
 		heldNotes.push({ code: event.code, note: note })
 		let label = noteToLabel(note)
 		if (label !== '' && piano?.loaded) piano?.triggerAttack(label)
@@ -207,6 +209,18 @@
 
 		<Label for="pitchBendRange">Pitch Bend Range</Label>
 		<Input type="number" bind:value={pitchBendRange} id="pitchBendRange" />
+
+		<Label for="velocity">Velocity</Label>
+		<div class="px-2">
+			<Slider
+				onValueChange={(value) => (velocity = value[0])}
+				value={[velocity]}
+				min={0}
+				max={127}
+				step={1}
+				id="velocity"
+			/>
+		</div>
 
 		<Label for="scale">Scale</Label>
 		<ScaleSelect bind:selectedScale {scales} id="scale" />
