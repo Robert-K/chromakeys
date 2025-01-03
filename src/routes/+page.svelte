@@ -1,5 +1,5 @@
 <script lang="ts">
-	const ENABLE_AUDIO = false
+	const ENABLE_AUDIO = true
 
 	import OutputSelect from '$lib/components/output-select.svelte'
 	import Button from '$lib/components/ui/button/button.svelte'
@@ -33,6 +33,10 @@
 	let reverb: Tone.Reverb
 	let piano: Tone.Sampler
 
+	let sustainHeld: boolean = false
+
+	let sustainedNoteLabels: Set<string> = new Set()
+
 	let selectedOutput = $state<Output | null>(null)
 	interface Key {
 		label: string
@@ -49,9 +53,9 @@
 
 	let pitchBendRange = $state(2)
 
-	let selectedScale = $state(null) // TODO: Not implemented yet
+	let selectedScale = $state(scales[0]) // TODO: Show scales
 
-	let enforceScale = $state(false)
+	let enforceScale = $state(false) // TODO: Enforce scales
 
 	let velocity = $state(100)
 
@@ -106,6 +110,7 @@
 				break
 			case 'Space':
 				selectedOutput?.sendControlChange(CC_SUSTAIN, 127)
+				sustainHeld = true
 				event.preventDefault()
 				break
 		}
@@ -127,6 +132,12 @@
 		switch (event.code) {
 			case 'Space':
 				selectedOutput?.sendControlChange(CC_SUSTAIN, 0)
+				sustainHeld = false
+				console.log(sustainedNoteLabels)
+				for (let label of sustainedNoteLabels) {
+					if (label !== '' && piano?.loaded) piano?.triggerRelease(label)
+				}
+				sustainedNoteLabels.clear()
 				break
 		}
 		heldNotes
@@ -134,7 +145,11 @@
 			.forEach((held) => {
 				selectedOutput?.stopNote(held.note)
 				let label = noteToLabel(held.note)
-				if (label !== '' && piano?.loaded) piano?.triggerRelease(label)
+				if (sustainHeld) {
+					sustainedNoteLabels.add(label)
+				} else if (label !== '' && piano?.loaded) {
+					piano?.triggerRelease(label)
+				}
 			})
 		heldNotes = heldNotes.filter((held) => held.code !== event.code)
 	}
@@ -211,7 +226,7 @@
 		<Input type="number" bind:value={pitchBendRange} id="pitchBendRange" />
 
 		<Label for="velocity">Velocity</Label>
-		<div class="px-2">
+		<div class="pl-2 pr-3">
 			<Slider
 				onValueChange={(value) => (velocity = value[0])}
 				value={[velocity]}

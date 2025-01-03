@@ -60,7 +60,7 @@
 				<Command.Group>
 					{#each options as option}
 						<Command.Item
-							value={option.value}
+							value={option.label}
 							onSelect={() => {
 								selectedOutput = outputs.find((output) => output.id == option.value)
 								closeAndFocusTrigger()

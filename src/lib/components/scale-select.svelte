@@ -17,7 +17,7 @@
 	let options = $derived(
 		scales.map((scale, index) => ({
 			label: scale.name,
-			value: index
+			value: index,
 		})),
 	)
 
@@ -47,26 +47,26 @@
 				role="combobox"
 				aria-expanded={open}
 			>
-				{selectedValue || 'Select an output...'}
+				{selectedValue || 'Select a scale...'}
 				<ChevronsUpDown class="opacity-50" />
 			</Button>
 		{/snippet}
 	</Popover.Trigger>
 	<Popover.Content class="w-full p-0">
 		<Command.Root>
-			<Command.Input placeholder="Search outputs..." />
+			<Command.Input placeholder="Search scales..." />
 			<Command.List>
-				<Command.Empty>No outputs found.</Command.Empty>
+				<Command.Empty>No scales found.</Command.Empty>
 				<Command.Group>
 					{#each options as option}
 						<Command.Item
-							value={option.value.toString()}
+							value={option.label}
 							onSelect={() => {
 								selectedScale = scales[option.value]
 								closeAndFocusTrigger()
 							}}
 						>
-							<Check class={cn(selectedScale !== scales[option.value] && 'text-transparent')} />
+							<Check class={cn(selectedScale?.name !== option.label && 'text-transparent')} />
 							{option.label}
 						</Command.Item>
 					{/each}
