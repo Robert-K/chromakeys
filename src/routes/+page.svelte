@@ -63,7 +63,7 @@
 		selectedOutput?.sendPitchBend(value)
 	}
 	interface HeldNote {
-		code: string
+		code: string | null // code == keycode for keyboard-triggered notes, null for button-triggered notes
 		note: number
 	}
 
@@ -152,6 +152,18 @@
 				}
 			})
 		heldNotes = heldNotes.filter((held) => held.code !== event.code)
+	}
+
+	const handleButtonPress = (key: Key, note: number, noteLabel: string) => {
+		selectedOutput?.playNote(note, { rawAttack: velocity })
+		heldNotes.push({ code: key.code, note: note })
+		if (noteLabel !== '' && piano?.loaded) piano?.triggerAttack(noteLabel)
+	}
+
+	const handleButtonRelease = (key: Key, note: number, noteLabel: string) => {
+		selectedOutput?.stopNote(note)
+		heldNotes = heldNotes.filter((held) => held.code !== key.code)
+		if (noteLabel !== '' && piano?.loaded) piano?.triggerRelease(noteLabel)
 	}
 
 	const toggleMapping = () => {
@@ -283,16 +295,24 @@
 		>
 			{#each layout.filter((_, index) => index % rowCount === rowCount - rowIndex - 1) as key}
 				<!-- TODO: Refactor keys and make them buttons + MPE -->
-				{@const pressed = heldNotes.some((note) => note.code === key.code)}
-				{@const noteLabel = noteToLabel(
-					indexToNote(layout.findIndex((other) => other.code === key.code)),
-				)}
+				{@const pressed = heldNotes.some((held) => held.code === key.code)}
+				{@const note = indexToNote(layout.findIndex((other) => other.code === key.code))}
+				{@const noteLabel = noteToLabel(note)}
 				{@const whiteKey = noteLabel && !noteLabel.includes('#')}
 				<div
-					class="border-2x m-2 flex h-20 w-20 flex-col items-center justify-center rounded-xl border-2"
+					class="m-2 flex h-20 w-20 select-none flex-col items-center justify-center rounded-xl border-2"
 					class:border-primary={pressed}
 					class:pt-2={pressed}
 					class:bg-muted={whiteKey === darkMode}
+					onmousedown={() => handleButtonPress(key, note, noteLabel)}
+					onmouseup={() => handleButtonRelease(key, note, noteLabel)}
+					ontouchstart={() => handleButtonPress(key, note, noteLabel)}
+					ontouchend={(e) => {
+						handleButtonRelease(key, note, noteLabel)
+						e.preventDefault()
+					}}
+					role="button"
+					tabindex="0"
 				>
 					<span class="text-xl font-semibold">{noteLabel}</span>
 					<span class="text-muted-foreground">{formatKeyLabel(key.label)}</span>
