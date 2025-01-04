@@ -84,6 +84,12 @@
 		return note
 	}
 
+	const isInScale = (note: number) => {
+		let noteIndex = (note - rootNote) % 12
+		while (noteIndex < 0) noteIndex += 12
+		return selectedScale.steps.includes(noteIndex)
+	}
+
 	const CC_SUSTAIN = 64
 
 	const handleKeyDown = (event: KeyboardEvent) => {
@@ -122,6 +128,7 @@
 		let index = layout.findIndex((key) => key.code === event.code)
 		if (index === -1) return
 		const note = indexToNote(index)
+		if (enforceScale && !isInScale(note)) return
 		selectedOutput?.playNote(note, { rawAttack: velocity })
 		heldNotes.push({ code: event.code, note: note })
 		let label = noteToLabel(note)
@@ -155,6 +162,7 @@
 	}
 
 	const handleButtonPress = (key: Key, note: number, noteLabel: string) => {
+		if (enforceScale && !isInScale(note)) return
 		selectedOutput?.playNote(note, { rawAttack: velocity })
 		heldNotes.push({ code: key.code, note: note })
 		if (noteLabel !== '' && piano?.loaded) piano?.triggerAttack(noteLabel)
@@ -304,6 +312,7 @@
 					class:border-primary={pressed}
 					class:pt-2={pressed}
 					class:bg-muted={whiteKey === darkMode}
+					class:opacity-30={!isInScale(note)}
 					onmousedown={() => handleButtonPress(key, note, noteLabel)}
 					onmouseup={() => handleButtonRelease(key, note, noteLabel)}
 					ontouchstart={() => handleButtonPress(key, note, noteLabel)}
