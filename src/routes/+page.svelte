@@ -10,7 +10,7 @@
 	import Slider from '$lib/components/ui/slider/slider.svelte'
 	import * as Tone from 'tone'
 	import { mode } from 'mode-watcher'
-	import { formatKeyLabel, noteToLabel } from '$lib/utils'
+	import { noteToLabel } from '$lib/utils'
 	import { QWERTZ } from '$lib/layouts'
 	import Label from '$lib/components/ui/label/label.svelte'
 	import { Portal } from 'bits-ui'
@@ -18,6 +18,7 @@
 	import Switch from '$lib/components/ui/switch/switch.svelte'
 	import { scales } from '$lib/scales'
 	import ScaleSelect from '$lib/components/scale-select.svelte'
+	import NoteSelect from '$lib/components/note-select.svelte'
 
 	let outputs = $state<Output[]>([])
 
@@ -47,15 +48,17 @@
 	let layout = $state<Key[]>(QWERTZ)
 
 	let rowCount = $state(4)
-	let rootNote = $state(48) // C3
+	let rootNote = $state(36) // C2
 
 	let transpose = $state(0)
 
 	let pitchBendRange = $state(2)
 
-	let selectedScale = $state(scales[0]) // TODO: Show scales
+	let selectedScale = $state(scales[0])
 
-	let enforceScale = $state(false) // TODO: Enforce scales
+	let scaleRoot = $state(0)
+
+	let enforceScale = $state(false)
 
 	let velocity = $state(100)
 
@@ -78,14 +81,11 @@
 	let stagger = $state(0.75)
 
 	const indexToNote = (index: number) => {
-		let note = rootNote + index
-		note -= Math.floor(note / rowCount) * (rowCount - 3) - rowCount + 1
-		note += transpose
-		return note
+		return rootNote + transpose + index - Math.floor(index / rowCount) * (rowCount - 3)
 	}
 
 	const isInScale = (note: number) => {
-		let noteIndex = (note - rootNote) % 12
+		let noteIndex = (note - scaleRoot) % 12
 		while (noteIndex < 0) noteIndex += 12
 		return selectedScale.steps.includes(noteIndex)
 	}
@@ -258,6 +258,7 @@
 		</div>
 
 		<Label for="scale">Scale</Label>
+		<NoteSelect bind:note={scaleRoot} from={0} to={11} showOctave={false} id="scaleRoot" />
 		<ScaleSelect bind:selectedScale {scales} id="scale" />
 
 		<div class="flex justify-between pr-1">
@@ -266,7 +267,7 @@
 		</div>
 
 		<Label for="rootNote">Root Note</Label>
-		<Input type="number" bind:value={rootNote} id="rootNote" />
+		<NoteSelect bind:note={rootNote} from={0} to={127} id="rootNote" />
 
 		<Label for="rowCount">Number of Rows</Label>
 		<Input type="number" bind:value={rowCount} id="rowCount" />
@@ -324,7 +325,7 @@
 					tabindex="0"
 				>
 					<span class="text-xl font-semibold">{noteLabel}</span>
-					<span class="text-muted-foreground">{formatKeyLabel(key.label)}</span>
+					<span class="text-muted-foreground">{key.label}</span>
 				</div>
 			{/each}
 		</div>

@@ -4,11 +4,11 @@ export const QWERTZ = [
         code: 'IntlBackslash',
     },
     {
-        label: 'a',
+        label: 'A',
         code: 'KeyA',
     },
     {
-        label: 'w',
+        label: 'W',
         code: 'KeyW',
     },
     {
@@ -16,15 +16,15 @@ export const QWERTZ = [
         code: 'Digit3',
     },
     {
-        label: 'y',
+        label: 'Y',
         code: 'KeyZ',
     },
     {
-        label: 's',
+        label: 'S',
         code: 'KeyS',
     },
     {
-        label: 'e',
+        label: 'E',
         code: 'KeyE',
     },
     {
@@ -32,15 +32,15 @@ export const QWERTZ = [
         code: 'Digit4',
     },
     {
-        label: 'x',
+        label: 'X',
         code: 'KeyX',
     },
     {
-        label: 'd',
+        label: 'D',
         code: 'KeyD',
     },
     {
-        label: 'r',
+        label: 'R',
         code: 'KeyR',
     },
     {
@@ -48,15 +48,15 @@ export const QWERTZ = [
         code: 'Digit5',
     },
     {
-        label: 'c',
+        label: 'C',
         code: 'KeyC',
     },
     {
-        label: 'f',
+        label: 'F',
         code: 'KeyF',
     },
     {
-        label: 't',
+        label: 'T',
         code: 'KeyT',
     },
     {
@@ -64,15 +64,15 @@ export const QWERTZ = [
         code: 'Digit6',
     },
     {
-        label: 'v',
+        label: 'V',
         code: 'KeyV',
     },
     {
-        label: 'g',
+        label: 'G',
         code: 'KeyG',
     },
     {
-        label: 'z',
+        label: 'Z',
         code: 'KeyY',
     },
     {
@@ -80,15 +80,15 @@ export const QWERTZ = [
         code: 'Digit7',
     },
     {
-        label: 'b',
+        label: 'B',
         code: 'KeyB',
     },
     {
-        label: 'h',
+        label: 'H',
         code: 'KeyH',
     },
     {
-        label: 'u',
+        label: 'U',
         code: 'KeyU',
     },
     {
@@ -96,15 +96,15 @@ export const QWERTZ = [
         code: 'Digit8',
     },
     {
-        label: 'n',
+        label: 'N',
         code: 'KeyN',
     },
     {
-        label: 'j',
+        label: 'J',
         code: 'KeyJ',
     },
     {
-        label: 'i',
+        label: 'I',
         code: 'KeyI',
     },
     {
@@ -112,15 +112,15 @@ export const QWERTZ = [
         code: 'Digit9',
     },
     {
-        label: 'm',
+        label: 'M',
         code: 'KeyM',
     },
     {
-        label: 'k',
+        label: 'K',
         code: 'KeyK',
     },
     {
-        label: 'o',
+        label: 'O',
         code: 'KeyO',
     },
     {
@@ -132,11 +132,11 @@ export const QWERTZ = [
         code: 'Comma',
     },
     {
-        label: 'l',
+        label: 'L',
         code: 'KeyL',
     },
     {
-        label: 'p',
+        label: 'P',
         code: 'KeyP',
     },
     {
@@ -148,11 +148,11 @@ export const QWERTZ = [
         code: 'Period',
     },
     {
-        label: 'ö',
+        label: 'Ö',
         code: 'Semicolon',
     },
     {
-        label: 'ü',
+        label: 'Ü',
         code: 'BracketLeft',
     },
     {
@@ -164,7 +164,7 @@ export const QWERTZ = [
         code: 'Slash',
     },
     {
-        label: 'ä',
+        label: 'Ä',
         code: 'Quote',
     },
     {
@@ -172,7 +172,7 @@ export const QWERTZ = [
         code: 'BracketRight',
     },
     {
-        label: 'Backspace',
+        label: '⌫',
         code: 'Backspace',
     },
 ]
