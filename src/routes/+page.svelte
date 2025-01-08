@@ -19,6 +19,9 @@
 	import { scales } from '$lib/scales'
 	import ScaleSelect from '$lib/components/scale-select.svelte'
 	import NoteSelect from '$lib/components/note-select.svelte'
+	import MidiDropzone from '$lib/components/midi-dropzone.svelte'
+	import type { Midi } from '@tonejs/midi'
+	import Logo from '$lib/components/logo.svelte'
 
 	let outputs = $state<Output[]>([])
 
@@ -90,6 +93,8 @@
 		return selectedScale.steps.includes(noteIndex)
 	}
 
+	let midi = $state<Midi | null>(null)
+
 	const CC_SUSTAIN = 64
 
 	const handleKeyDown = (event: KeyboardEvent) => {
@@ -128,6 +133,20 @@
 		let index = layout.findIndex((key) => key.code === event.code)
 		if (index === -1) return
 		const note = indexToNote(index)
+
+		if (currentNotesToPlay?.includes(note)) {
+			// TODO: This is a test, do it properly
+			notesToPlay[playIndex] = notesToPlay[playIndex].filter((n) => n !== note)
+			if (notesToPlay[playIndex].length === 0) {
+				playIndex++
+			}
+		} else {
+			console.log(
+				'you should play',
+				currentNotesToPlay?.map((note) => noteToLabel(note)),
+			)
+		}
+
 		if (enforceScale && !isInScale(note)) return
 		selectedOutput?.playNote(note, { rawAttack: velocity })
 		heldNotes.push({ code: event.code, note: note })
@@ -224,6 +243,23 @@
 		}).connect(reverb)
 	}
 
+	let notesToPlay = $state<number[][]>([]) // TODO: This is a test, do it properly
+	let playIndex = $state(0)
+	let currentNotesToPlay = $derived(notesToPlay.length > playIndex ? notesToPlay[playIndex] : [])
+
+	const handleMidiChange = (midi: Midi) => {
+		console.log(midi)
+		let upcomingNotes = midi.tracks[0].notes
+		let notesByTicks = new Map<number, number[]>()
+		for (let note of upcomingNotes) {
+			if (!notesByTicks.has(note.ticks)) {
+				notesByTicks.set(note.ticks, [])
+			}
+			notesByTicks.get(note.ticks)?.push(note.midi)
+		}
+		notesToPlay = Array.from(notesByTicks.values()) // TODO: This is a test, do it properly
+	}
+
 	onMount(() => {
 		document.addEventListener('keydown', handleKeyDown)
 		document.addEventListener('keyup', handleKeyUp)
@@ -291,10 +327,15 @@
 
 		<Label for="transpose">Transpose</Label>
 		<Input type="number" bind:value={transpose} id="transpose" />
+
+		<MidiDropzone {midi} onmidichange={handleMidiChange} />
 	</div>
 </Portal>
 
 <div class="flex h-screen flex-col items-center justify-center">
+	<div class="absolute top-0 w-full flex justify-center p-12 pointer-events-none">
+		<Logo {stagger} />
+	</div>
 	<PitchBend onchange={handlePitchBend} />
 	{#each { length: rowCount }, rowIndex}
 		<div
@@ -313,6 +354,7 @@
 					class:border-primary={pressed}
 					class:pt-2={pressed}
 					class:bg-muted={whiteKey === darkMode}
+					class:bg-violet-500={currentNotesToPlay?.includes(note)}
 					class:opacity-30={!isInScale(note)}
 					onmousedown={() => handleButtonPress(key, note, noteLabel)}
 					onmouseup={() => handleButtonRelease(key, note, noteLabel)}
