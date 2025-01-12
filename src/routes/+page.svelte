@@ -28,7 +28,9 @@
 	WebMidi.enable()
 		.then(() => {
 			outputs = WebMidi.outputs
-			selectedOutput = outputs[0]
+			if (outputs.length == 1) {
+				selectedOutput = outputs[0]
+			}
 		})
 		.catch((error) => {
 			console.log('WebMidi could not be enabled', error)
