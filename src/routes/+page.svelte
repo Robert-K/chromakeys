@@ -1,6 +1,4 @@
 <script lang="ts">
-	const ENABLE_AUDIO = true
-
 	import OutputSelect from '$lib/components/output-select.svelte'
 	import Button from '$lib/components/ui/button/button.svelte'
 	import Input from '$lib/components/ui/input/input.svelte'
@@ -48,6 +46,8 @@
 		label: string
 		code: string
 	}
+
+	let enableSynth = $state(false)
 
 	let mapping = $state(false)
 	let layout = $state<Key[]>(QWERTZ)
@@ -153,7 +153,7 @@
 		selectedOutput?.playNote(note, { rawAttack: velocity })
 		heldNotes.push({ code: event.code, note: note })
 		let label = noteToLabel(note)
-		if (label !== '' && piano?.loaded) piano?.triggerAttack(label)
+		if (enableSynth && label !== '' && piano?.loaded) piano?.triggerAttack(label)
 	}
 
 	const handleKeyUp = (event: KeyboardEvent) => {
@@ -161,10 +161,7 @@
 			case 'Space':
 				selectedOutput?.sendControlChange(CC_SUSTAIN, 0)
 				sustainHeld = false
-				console.log(sustainedNoteLabels)
-				for (let label of sustainedNoteLabels) {
-					if (label !== '' && piano?.loaded) piano?.triggerRelease(label)
-				}
+				if (enableSynth && piano?.loaded) piano?.triggerRelease(Array.from(sustainedNoteLabels))
 				sustainedNoteLabels.clear()
 				break
 		}
@@ -175,7 +172,7 @@
 				let label = noteToLabel(held.note)
 				if (sustainHeld) {
 					sustainedNoteLabels.add(label)
-				} else if (label !== '' && piano?.loaded) {
+				} else if (enableSynth && label !== '' && piano?.loaded) {
 					piano?.triggerRelease(label)
 				}
 			})
@@ -186,13 +183,13 @@
 		if (enforceScale && !isInScale(note)) return
 		selectedOutput?.playNote(note, { rawAttack: velocity })
 		heldNotes.push({ code: key.code, note: note })
-		if (noteLabel !== '' && piano?.loaded) piano?.triggerAttack(noteLabel)
+		if (enableSynth && noteLabel !== '' && piano?.loaded) piano?.triggerAttack(noteLabel)
 	}
 
 	const handleButtonRelease = (key: Key, note: number, noteLabel: string) => {
 		selectedOutput?.stopNote(note)
 		heldNotes = heldNotes.filter((held) => held.code !== key.code)
-		if (noteLabel !== '' && piano?.loaded) piano?.triggerRelease(noteLabel)
+		if (enableSynth && noteLabel !== '' && piano?.loaded) piano?.triggerRelease(noteLabel)
 	}
 
 	const toggleMapping = () => {
@@ -205,45 +202,49 @@
 		}
 	}
 
-	const loadAudio = async () => {
-		reverb = new Tone.Reverb({ decay: 4, preDelay: 0, wet: 0.3 }).toDestination()
-		piano = new Tone.Sampler({
-			urls: {
-				A0: 'A0.mp3',
-				C1: 'C1.mp3',
-				'D#1': 'Ds1.mp3',
-				'F#1': 'Fs1.mp3',
-				A1: 'A1.mp3',
-				C2: 'C2.mp3',
-				'D#2': 'Ds2.mp3',
-				'F#2': 'Fs2.mp3',
-				A2: 'A2.mp3',
-				C3: 'C3.mp3',
-				'D#3': 'Ds3.mp3',
-				'F#3': 'Fs3.mp3',
-				A3: 'A3.mp3',
-				C4: 'C4.mp3',
-				'D#4': 'Ds4.mp3',
-				'F#4': 'Fs4.mp3',
-				A4: 'A4.mp3',
-				C5: 'C5.mp3',
-				'D#5': 'Ds5.mp3',
-				'F#5': 'Fs5.mp3',
-				A5: 'A5.mp3',
-				C6: 'C6.mp3',
-				'D#6': 'Ds6.mp3',
-				'F#6': 'Fs6.mp3',
-				A6: 'A6.mp3',
-				C7: 'C7.mp3',
-				'D#7': 'Ds7.mp3',
-				'F#7': 'Fs7.mp3',
-				A7: 'A7.mp3',
-				C8: 'C8.mp3',
-			},
-			release: 1,
-			baseUrl: 'https://tonejs.github.io/audio/salamander/',
-		}).connect(reverb)
-	}
+	$effect(() => {
+		if (enableSynth && !piano) {
+			reverb = new Tone.Reverb({ decay: 4, preDelay: 0, wet: 0.3 }).toDestination()
+			piano = new Tone.Sampler({
+				urls: {
+					A0: 'A0.mp3',
+					C1: 'C1.mp3',
+					'D#1': 'Ds1.mp3',
+					'F#1': 'Fs1.mp3',
+					A1: 'A1.mp3',
+					C2: 'C2.mp3',
+					'D#2': 'Ds2.mp3',
+					'F#2': 'Fs2.mp3',
+					A2: 'A2.mp3',
+					C3: 'C3.mp3',
+					'D#3': 'Ds3.mp3',
+					'F#3': 'Fs3.mp3',
+					A3: 'A3.mp3',
+					C4: 'C4.mp3',
+					'D#4': 'Ds4.mp3',
+					'F#4': 'Fs4.mp3',
+					A4: 'A4.mp3',
+					C5: 'C5.mp3',
+					'D#5': 'Ds5.mp3',
+					'F#5': 'Fs5.mp3',
+					A5: 'A5.mp3',
+					C6: 'C6.mp3',
+					'D#6': 'Ds6.mp3',
+					'F#6': 'Fs6.mp3',
+					A6: 'A6.mp3',
+					C7: 'C7.mp3',
+					'D#7': 'Ds7.mp3',
+					'F#7': 'Fs7.mp3',
+					A7: 'A7.mp3',
+					C8: 'C8.mp3',
+				},
+				release: 1,
+				baseUrl: 'https://tonejs.github.io/audio/salamander/',
+			}).connect(reverb)
+		} else {
+			piano?.triggerRelease(Array.from(sustainedNoteLabels))
+		}
+	})
 
 	let notesToPlay = $state<number[][]>([]) // TODO: This is a test, do it properly
 	let playIndex = $state(0)
@@ -266,8 +267,6 @@
 		document.addEventListener('keydown', handleKeyDown)
 		document.addEventListener('keyup', handleKeyUp)
 
-		if (ENABLE_AUDIO) loadAudio()
-
 		return () => {
 			document.removeEventListener('keydown', handleKeyDown)
 			document.removeEventListener('keyup', handleKeyUp)
@@ -279,6 +278,11 @@
 	<div class="flex flex-col gap-4 p-4">
 		<Label for="output">MIDI Output</Label>
 		<OutputSelect bind:selectedOutput {outputs} id="output" />
+
+		<div class="flex justify-between pr-1">
+			<Label for="enableSynth">Synth</Label>
+			<Switch bind:checked={enableSynth} id="enableSynth" />
+		</div>
 
 		<Label for="pitchBendRange">Pitch Bend Range</Label>
 		<Input type="number" bind:value={pitchBendRange} id="pitchBendRange" />
@@ -335,7 +339,7 @@
 </Portal>
 
 <div class="flex h-screen flex-col items-center justify-center">
-	<div class="absolute top-0 w-full flex justify-center p-12 pointer-events-none">
+	<div class="pointer-events-none absolute top-0 flex w-full justify-center p-12">
 		<Logo {stagger} />
 	</div>
 	<PitchBend onchange={handlePitchBend} />
