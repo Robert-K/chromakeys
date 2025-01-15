@@ -275,66 +275,87 @@
 </script>
 
 <Portal to="#options">
-	<div class="flex flex-col gap-4 p-4">
-		<Label for="output">MIDI Output</Label>
-		<OutputSelect bind:selectedOutput {outputs} id="output" />
+	<div class="flex flex-col gap-6 p-4">
+		<div class="flex flex-col gap-2">
+			<Label for="output">MIDI Output</Label>
+			<OutputSelect bind:selectedOutput {outputs} id="output" />
+		</div>
 
 		<div class="flex justify-between pr-1">
 			<Label for="enableSynth">Synth</Label>
 			<Switch bind:checked={enableSynth} id="enableSynth" />
 		</div>
 
-		<Label for="pitchBendRange">Pitch Bend Range</Label>
-		<Input type="number" bind:value={pitchBendRange} id="pitchBendRange" />
-
-		<Label for="velocity">Velocity</Label>
-		<div class="pl-2 pr-3">
-			<Slider
-				onValueChange={(value) => (velocity = value[0])}
-				value={[velocity]}
-				min={0}
-				max={127}
-				step={1}
-				id="velocity"
-			/>
+		<div class="flex flex-col gap-2">
+			<Label for="pitchBendRange">Pitch Bend Range</Label>
+			<Input type="number" bind:value={pitchBendRange} id="pitchBendRange" />
 		</div>
 
-		<Label for="scale">Scale</Label>
-		<NoteSelect bind:note={scaleRoot} from={0} to={11} showOctave={false} id="scaleRoot" />
-		<ScaleSelect bind:selectedScale {scales} id="scale" />
+		<div class="flex flex-col gap-2">
+			<Label for="velocity">Velocity</Label>
+			<div class="pl-2 pr-3">
+				<Slider
+					onValueChange={(value) => (velocity = value[0])}
+					value={[velocity]}
+					min={0}
+					max={127}
+					step={1}
+					id="velocity"
+				/>
+			</div>
+		</div>
+
+		<div class="flex flex-col gap-2">
+			<Label for="scale">Scale</Label>
+			<NoteSelect bind:note={scaleRoot} from={0} to={11} showOctave={false} id="scaleRoot" />
+			<ScaleSelect bind:selectedScale {scales} id="scale" />
+		</div>
 
 		<div class="flex justify-between pr-1">
 			<Label for="enforceScale">Enforce Scale</Label>
 			<Switch bind:checked={enforceScale} id="enforceScale" />
 		</div>
 
-		<Label for="rootNote">Root Note</Label>
-		<NoteSelect bind:note={rootNote} from={0} to={127} id="rootNote" />
+		<div class="flex flex-col gap-2">
+			<Label for="rootNote">Root Note</Label>
+			<NoteSelect bind:note={rootNote} from={0} to={127} id="rootNote" />
+		</div>
 
-		<Label for="rowCount">Number of Rows</Label>
-		<Input type="number" bind:value={rowCount} id="rowCount" />
+		<div class="flex flex-col gap-2">
+			<Label for="rowCount">Number of Rows</Label>
+			<Input type="number" bind:value={rowCount} id="rowCount" />
+		</div>
 
 		<Button onclick={toggleMapping}>{mapping ? 'Finish Remapping' : 'Remap Keys'}</Button>
 
-		<Label for="rowDirection">Row Direction</Label>
-		<Button onclick={() => (rowDirection = (rowDirection + 1) % 4)} id="rowDirection">
-			<DirectionIcon />
-		</Button>
+		<div class="flex flex-col gap-2">
+			<Label for="rowDirection">Row Direction</Label>
+			<Button onclick={() => (rowDirection = (rowDirection + 1) % 4)} id="rowDirection">
+				<DirectionIcon />
+			</Button>
+		</div>
 
-		<Label for="stagger">Row Stagger</Label>
-		<Slider
-			value={[stagger]}
-			onValueChange={(value) => (stagger = value[0])}
-			min={0}
-			max={1}
-			step={0.05}
-			id="stagger"
-		/>
+		<div class="flex flex-col gap-2">
+			<Label for="stagger">Row Stagger</Label>
+			<Slider
+				value={[stagger]}
+				onValueChange={(value) => (stagger = value[0])}
+				min={0}
+				max={1}
+				step={0.05}
+				id="stagger"
+			/>
+		</div>
 
-		<Label for="transpose">Transpose</Label>
-		<Input type="number" bind:value={transpose} id="transpose" />
+		<div class="flex flex-col gap-2">
+			<Label for="transpose">Transpose</Label>
+			<Input type="number" bind:value={transpose} id="transpose" />
+		</div>
 
-		<MidiDropzone {midi} onmidichange={handleMidiChange} />
+		<div class="flex flex-col gap-2">
+			<Label>MIDI Song Learn</Label>
+			<MidiDropzone {midi} onmidichange={handleMidiChange}/>
+		</div>
 	</div>
 </Portal>
 
