@@ -4,6 +4,13 @@ Play your computer keyboard like a chromatic button accordion! ✨
 
 Control your synths/DAWs or just have fun with the built-in piano. 🎹
 
+<p align="center">
+  <br>
+  <a href="https://keys.kosro.de"><b>Try it right now in your browser!</b></a>
+</p>
+
+<br>
+
 ![Screenshot 2024-12-30 195445](https://github.com/user-attachments/assets/1a5b20d0-74bc-469d-a9c9-16b9d0dcfea2)
 
 ## Features
