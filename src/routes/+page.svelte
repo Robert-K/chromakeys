@@ -134,6 +134,7 @@
 		}
 		let index = layout.findIndex((key) => key.code === event.code)
 		if (index === -1) return
+		event.preventDefault() // Mapped key pressed, preventing default
 		const note = indexToNote(index)
 
 		if (currentNotesToPlay?.includes(note)) {
