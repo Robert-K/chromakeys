@@ -1,0 +1,41 @@
+on:
+  push:
+  workflow_dispatch:
+name: 🚀 Deploy to keys.kosro.de on push
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web-deploy:
+    name: 🎉 Deploy
+    runs-on: ubuntu-latest
+    steps:
+    - name: 🚚 Checkout latest code
+      uses: actions/checkout@v4
+
+    - name: 🟩 Use Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+      
+    - name: ⚡ Setup pnpm
+      uses: pnpm/action-setup@v3.0.0
+      with:
+        version: latest
+    
+    - name: 🔨 Build Project
+      run: |
+        pnpm i
+        pnpm build
+    
+    - name: 📂 Sync files
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USER }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        server-dir: /
+        local-dir: ./build
+        protocol: ftps
