@@ -151,6 +151,7 @@
 		}
 
 		if (enforceScale && !isInScale(note)) return
+		if (heldNotes.some((held) => held.code === event.code)) return
 		selectedOutput?.playNote(note, { rawAttack: velocity })
 		heldNotes.push({ code: event.code, note: note })
 		let label = noteToLabel(note)
@@ -182,6 +183,7 @@
 
 	const handleButtonPress = (key: Key, note: number, noteLabel: string) => {
 		if (enforceScale && !isInScale(note)) return
+		if (heldNotes.some((held) => held.code === key.code)) return
 		selectedOutput?.playNote(note, { rawAttack: velocity })
 		heldNotes.push({ code: key.code, note: note })
 		if (enableSynth && noteLabel !== '' && piano?.loaded) piano?.triggerAttack(noteLabel)
